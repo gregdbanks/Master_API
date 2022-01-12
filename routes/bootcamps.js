@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const { getBootcamps } = require("../controllers/bootcamps");
 
-router.get("/", (req, res) => {
-  res.status(200).json({ success: true, msg: "hey howdy all" });
-});
+router.route("/").get(getBootcamps);
 
 router.get("/:id", (req, res) => {
   res
