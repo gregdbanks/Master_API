@@ -1,5 +1,6 @@
+const colors = require('colors');
 const errorHandler = (err, req, res, next) => {
-  console.log(err.stack.pink);
+  console.log(err.stack.bgBrightGreen);
 
   res.status(err.statusCode || 500).json({
     success: false,
