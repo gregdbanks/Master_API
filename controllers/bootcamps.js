@@ -1,12 +1,42 @@
+const geocoder = require('../utils/geocoder');
 const Bootcamp = require('../models/Bootcamps');
 const ErrorClass = require('../utils/errorClass');
 const asyncHandler = require('../middleware/async');
+const { param } = require('../routes/bootcamps');
 
 // Get All bootcamps
 // GET /api/v1/bootcamps
 // Public
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  const bootcamps = await Bootcamp.find();
+  let query;
+
+  // Copy req.query
+  const reqQuery = { ...req.query };
+
+  // Fields to exclude
+  const removeFields = ['select'];
+
+  // Loop over remove fields and delete them from reqQuery
+  removeFields.forEach((param) => delete reqQuery[param]);
+
+  // Create query string so we can utilize regex
+  let queryString = JSON.stringify(reqQuery);
+
+  // Create operators ($gt, $gte, etc)
+  queryString = queryString.replace(
+    /\b(gt|gte|lt|lte|in)\b/g,
+    (match) => `$${match}`
+  );
+
+  query = Bootcamp.find(JSON.parse(queryString));
+
+  // Select fields
+  if (req.query.select) {
+    const fields = req.query.select.split(',').join(' ');
+    query = query.select(fields);
+  }
+
+  const bootcamps = await query;
   res.status(200).json({
     success: true,
     count: bootcamps.length,
@@ -77,4 +107,29 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     );
   }
   res.status(200).json({ success: true, data: {} });
+});
+
+// Get bootcamps within a given radius
+// GET /api/v1/bootcamps/radius/:zipcode/:distance
+//
+exports.getBootcampsRange = asyncHandler(async (req, res, next) => {
+  const { zipcode, distance } = req.params;
+
+  // Get lat/lng from geocoder
+  const loc = await geocoder.geocode(zipcode);
+  const lat = loc[0].latitude;
+  const lng = loc[0].longitude;
+
+  // Calc radius ... distance/radius of earth(3,663 miles)
+  const radius = distance / 3963;
+
+  const bootcamps = await Bootcamp.find({
+    location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  res.status(200).json({
+    success: true,
+    count: bootcamps.length,
+    data: bootcamps,
+  });
 });
