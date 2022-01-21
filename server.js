@@ -1,6 +1,8 @@
+const path = require('path');
 const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
+const fileupload = require('express-fileupload');
 
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/error');
@@ -22,8 +24,15 @@ connectDB();
 // Route files
 const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
+const exp = require('constants');
 
-// Mount it
+// FIle Uploader
+app.use(fileupload());
+
+// Make static folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Mount routes
 app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses', courses);
 

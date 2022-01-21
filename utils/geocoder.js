@@ -1,7 +1,4 @@
 const NodeGeocoder = require('node-geocoder');
-const dotenv = require('dotenv');
-
-dotenv.config({ path: __dirname + '/utils.env' });
 
 const options = {
   provider: process.env.GEOCODER_PROVIDER,
