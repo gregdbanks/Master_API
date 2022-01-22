@@ -61,10 +61,8 @@ exports.createBootcamp = asyncHandler(async (req, res, next) => {
 // PUT /api/v1/bootcamp/:id
 // Private
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  let bootcamp = await Bootcamp.findById(req.params.id);
+
   if (!bootcamp) {
     return next(
       new ErrorClass(
@@ -73,6 +71,19 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
       )
     );
   }
+
+  // Make sure user is bootcamp owner
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new ErrorClass(`User ${req.params.id} cant update this bootcamp`, 401)
+    );
+  }
+
+  bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, reb.body, {
+    new: true,
+    renValidators: true,
+  });
+
   res.status(201).json({
     success: true,
     data: bootcamp,
@@ -92,6 +103,13 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
       )
     );
   }
+  // Make sure user is bootcamp owner
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new ErrorClass(`User ${req.params.id} cant delete this bootcamp`, 401)
+    );
+  }
+
   bootcamp.remove();
   res.status(200).json({ success: true, data: {} });
 });
@@ -133,6 +151,13 @@ exports.bootcampUploadPhoto = asyncHandler(async (req, res, next) => {
         `Bootcamp with id of ${req.params.id} not found homie`,
         404
       )
+    );
+  }
+
+  // Make sure user is bootcamp owner
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new ErrorClass(`User ${req.params.id} cant update this bootcamp`, 401)
     );
   }
 
