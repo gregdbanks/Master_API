@@ -1,4 +1,4 @@
-const advanceResults = (model, populate) => async (req, res, next) => {
+const advancedResults = (model, populate) => async (req, res, next) => {
   let query;
 
   // Copy req.query
@@ -7,28 +7,28 @@ const advanceResults = (model, populate) => async (req, res, next) => {
   // Fields to exclude
   const removeFields = ['select', 'sort', 'page', 'limit'];
 
-  // Loop over remove fields and delete them from reqQuery
+  // Loop over removeFields and delete them from reqQuery
   removeFields.forEach((param) => delete reqQuery[param]);
 
-  // Create query string so we can utilize regex
-  let queryString = JSON.stringify(reqQuery);
+  // Create query string
+  let queryStr = JSON.stringify(reqQuery);
 
   // Create operators ($gt, $gte, etc)
-  queryString = queryString.replace(
+  queryStr = queryStr.replace(
     /\b(gt|gte|lt|lte|in)\b/g,
     (match) => `$${match}`
   );
 
-  // Finding resources
-  query = model.find(JSON.parse(queryString));
+  // Finding resource
+  query = model.find(JSON.parse(queryStr));
 
-  // Select fields
+  // Select Fields
   if (req.query.select) {
     const fields = req.query.select.split(',').join(' ');
     query = query.select(fields);
   }
 
-  // Sort By
+  // Sort
   if (req.query.sort) {
     const sortBy = req.query.sort.split(',').join(' ');
     query = query.sort(sortBy);
@@ -36,12 +36,12 @@ const advanceResults = (model, populate) => async (req, res, next) => {
     query = query.sort('-createdAt');
   }
 
-  // Paginate (Need a `page` value and a `limit` value)
+  // Pagination
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 25;
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
-  const total = await model.countDocuments();
+  const total = await model.countDocuments(JSON.parse(queryStr));
 
   query = query.skip(startIndex).limit(limit);
 
@@ -49,10 +49,10 @@ const advanceResults = (model, populate) => async (req, res, next) => {
     query = query.populate(populate);
   }
 
-  // Execution
+  // Executing query
   const results = await query;
 
-  // Pagination results
+  // Pagination result
   const pagination = {};
 
   if (endIndex < total) {
@@ -64,12 +64,12 @@ const advanceResults = (model, populate) => async (req, res, next) => {
 
   if (startIndex > 0) {
     pagination.prev = {
-      page: page + 1,
+      page: page - 1,
       limit,
     };
   }
 
-  res.advanceResults = {
+  res.advancedResults = {
     success: true,
     count: results.length,
     pagination,
@@ -79,4 +79,4 @@ const advanceResults = (model, populate) => async (req, res, next) => {
   next();
 };
 
-module.exports = advanceResults;
+module.exports = advancedResults;
