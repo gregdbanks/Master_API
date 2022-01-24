@@ -8,7 +8,7 @@ const {
 } = require('../controllers/courses');
 
 const Course = require('../models/Course');
-const advanceResults = require('../middleware/advanceResults');
+const advancedResults = require('../middleware/advancedResults');
 
 const router = express.Router({ mergeParams: true });
 
@@ -17,7 +17,7 @@ const { protect, authorize } = require('../middleware/auth');
 router
   .route('/')
   .get(
-    advanceResults(Course, {
+    advancedResults(Course, {
       path: 'bootcamp',
       select: 'name description',
     }),

@@ -1,7 +1,7 @@
 const ErrorClass = require('../utils/errorClass');
 const asyncHandler = require('../middleware/async');
 const Review = require('../models/Review');
-const Bootcamps = require('../models/Bootcamps');
+const Bootcamp = require('../models/Bootcamps');
 
 // @desc      Get reviews
 // @route     GET /api/v1/reviews
@@ -49,7 +49,7 @@ exports.addReview = asyncHandler(async (req, res, next) => {
   req.body.bootcamp = req.params.bootcampId;
   req.body.user = req.user.id;
 
-  const bootcamp = await Bootcamps.findById(req.params.bootcampId);
+  const bootcamp = await Bootcamp.findById(req.params.bootcampId);
 
   if (!bootcamp) {
     return next(
