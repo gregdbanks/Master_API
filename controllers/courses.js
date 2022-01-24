@@ -17,7 +17,7 @@ exports.getCourses = asyncHandler(async (req, res, next) => {
       data: courses,
     });
   } else {
-    return res.status(200).json(res.advanceResults);
+    return res.status(200).json(res.advancedResults);
   }
 });
 
